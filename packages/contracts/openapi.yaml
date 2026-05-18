@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Beauty Store API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /catalog/categories:
+    get:
+      summary: List categories
+  /catalog/products:
+    get:
+      summary: List products
+  /cart:
+    get:
+      summary: Get cart
+  /orders/checkout:
+    post:
+      summary: Checkout

@@ -1,0 +1,44 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+
+export default function RegisterPage() {
+  const { register } = useAuth();
+  const router = useRouter();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await register(email, password, name || undefined);
+      router.push('/');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 400, margin: '0 auto' }}>
+      <h1 style={{ marginBottom: '1rem' }}>Create account</h1>
+      {error && <div className="alert alert-error">{error}</div>}
+      <form onSubmit={submit} className="card" style={{ padding: '1.5rem' }}>
+        <label>Name</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} />
+        <label>Email</label>
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <label>Password (min 8 chars)</label>
+        <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <button type="submit" className="btn" style={{ width: '100%' }}>Sign up</button>
+      </form>
+      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+        Already have an account? <Link href="/login">Login</Link>
+      </p>
+    </div>
+  );
+}
