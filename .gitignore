@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 dist/
 .next/
+web/out/
 .env
 .env.local
 *.log
