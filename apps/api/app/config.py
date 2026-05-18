@@ -45,6 +45,12 @@ class Settings(BaseSettings):
     catalog_cache_ttl: int = 120
     order_expire_hours: int = 24
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        # Convert postgresql:// to postgresql+asyncpg:// for async support
+        if self.database_url.startswith("postgresql://"):
+            self.database_url = self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

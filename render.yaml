@@ -22,7 +22,7 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://YOUR_USERNAME.github.io
+        value: https://bhuvi27.github.io
       - key: PYTHON_VERSION
         value: "3.12.0"
 
