@@ -13,9 +13,11 @@ services:
         fromDatabase:
           name: beauty-store-db
           property: connectionString
-      - key: MONGODB_URI
-        sync: false
       - key: REDIS_URL
+        fromService:
+          name: beauty-store-redis
+          property: connectionString
+      - key: MONGODB_URI
         sync: false
       - key: JWT_ACCESS_SECRET
         generateValue: true
@@ -25,6 +27,12 @@ services:
         value: https://bhuvi27.github.io
       - key: PYTHON_VERSION
         value: "3.12.0"
+
+  - type: pserv
+    name: beauty-store-redis
+    runtime: redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
 
 databases:
   - name: beauty-store-db
