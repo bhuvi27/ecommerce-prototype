@@ -94,7 +94,11 @@ async def seed():
         doc = {**p, "category_id": str(cat_ids[p["category_slug"]])}
         await db.products.insert_one(doc)
 
-    await redis_delete(CACHE_CATEGORIES)
+    # Skip Redis cache clear if Redis is unavailable
+    try:
+        await redis_delete(CACHE_CATEGORIES)
+    except Exception as e:
+        print(f"Warning: Could not clear Redis cache: {e}")
 
     async with async_session_factory() as session:
         result = await session.execute(select(User).where(User.email == settings.admin_email))
