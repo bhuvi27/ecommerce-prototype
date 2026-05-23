@@ -154,7 +154,7 @@ export default function CheckoutPage() {
       const created = await auth.createAddress({
         label: addressLabel || 'Home',
         line1: form.shipping_line1,
-        line2: form.shipping_line2 || undefined,
+        line2: form.shipping_line2 || null,
         city: form.shipping_city,
         state: form.shipping_state,
         pincode: form.shipping_pincode,

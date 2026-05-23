@@ -34,7 +34,8 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
           GITHUB_REPOSITORY: ${{ github.repository }}
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1' }}
+          # Override in repo Settings → Actions → Variables if your Render URL differs
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://beauty-store-api.onrender.com/api/v1' }}
         run: npm run build
 
       - name: Add .nojekyll

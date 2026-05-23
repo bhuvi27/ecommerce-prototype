@@ -86,6 +86,17 @@ Or include the full path origin with repo name.
 
 ---
 
+## Why the live UI looks old but products changed
+
+| What | Where it lives | Updates when |
+|------|----------------|--------------|
+| Product list (no creams, etc.) | **Render API** + MongoDB | You redeploy API / run seed |
+| Checkout, COD, addresses, cart UI | **GitHub Pages** static build | **Deploy GitHub Pages** workflow succeeds |
+
+If the UI still shows mock payment or old checkout, the **Pages build failed** or did not run. Check **Actions** → **Deploy GitHub Pages** → latest run must be green.
+
+Common fix: `cd web && npm run build` must pass locally before push. A TypeScript error blocks the new UI from publishing.
+
 ## Updating the product catalog
 
 Products and categories come from the **API database** (MongoDB), not from the static Pages build alone.
