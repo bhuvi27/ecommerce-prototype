@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { orders, Order, formatPrice } from '@/lib/api';
+import { orders, Order, formatPrice, RAZORPAY_KEY_ID } from '@/lib/api';
 
 function OrderViewContent() {
   const searchParams = useSearchParams();
@@ -37,16 +37,28 @@ function OrderViewContent() {
       <h1 style={{ marginBottom: '0.5rem' }}>Order #{order.id.slice(0, 8)}</h1>
       <p style={{ marginBottom: '1rem' }}>
         Status: <span className="badge">{order.status}</span>
+        {order.payment_method === 'cod' && (
+          <span className="badge" style={{ marginLeft: 8 }}>Cash on Delivery</span>
+        )}
       </p>
-      {order.status === 'pending' && (
+      {order.status === 'pending' && !RAZORPAY_KEY_ID && (
         <div style={{ marginBottom: '1rem' }}>
           <button type="button" className="btn" onClick={mockPay} disabled={paying}>
             {paying ? 'Confirming...' : 'Complete payment (dev mode)'}
           </button>
         </div>
       )}
+      {order.status === 'pending' && RAZORPAY_KEY_ID && (
+        <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+          Payment pending. Complete payment from checkout or your Razorpay dashboard.
+        </div>
+      )}
       {order.status === 'confirmed' && (
-        <div className="alert alert-success">Payment confirmed. Thank you!</div>
+        <div className="alert alert-success">
+          {order.payment_method === 'cod'
+            ? 'Order placed! Pay cash when your order is delivered.'
+            : 'Payment confirmed. Thank you!'}
+        </div>
       )}
       <ul style={{ listStyle: 'none' }}>
         {order.items.map((item) => (

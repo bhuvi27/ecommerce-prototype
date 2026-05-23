@@ -7,18 +7,20 @@ export function Header() {
   const { user, logout } = useAuth();
 
   return (
-    <header style={{ borderBottom: '1px solid var(--border)', background: 'var(--card)', marginBottom: '2rem' }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem' }}>
-        <Link href="/" style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent)' }}>
+    <header className="site-header">
+      <div className="container header-inner">
+        <Link href="/" className="brand">
           Shree Hari Beauty
         </Link>
-        <nav style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+        <nav className="header-nav">
           <Link href="/">Shop</Link>
           <Link href="/cart">Cart</Link>
           {user ? (
             <>
               <Link href="/orders">Orders</Link>
-              <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>{user.email}</span>
+              <Link href="/account">Account</Link>
+              <Link href="/account/addresses">Addresses</Link>
+              <span className="header-user">{user.name || user.email}</span>
               <button className="btn btn-outline" onClick={logout} style={{ padding: '0.4rem 0.8rem' }}>
                 Logout
               </button>

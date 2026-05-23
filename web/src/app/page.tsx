@@ -20,14 +20,14 @@ export default function HomePage() {
 
   return (
     <>
-      <section style={{ marginBottom: '2rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Natural Beauty, Delivered</h1>
-        <p style={{ color: 'var(--muted)' }}>Handpicked oils, facewash and creams for your daily care</p>
+      <section className="hero-banner">
+        <h1>Natural Beauty, Delivered</h1>
+        <p style={{ color: 'var(--muted)' }}>Handpicked oils, facewash and creams — shop like your favourite marketplace</p>
       </section>
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+      <div className="category-pills">
         <button
           type="button"
           className={`btn ${!activeCategory ? '' : 'btn-outline'}`}

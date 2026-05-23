@@ -88,6 +88,70 @@ async def handle_payment_captured(db: AsyncSession, payload: dict) -> None:
     await db.flush()
 
 
+class PaymentVerifyError(Exception):
+    pass
+
+
+async def verify_checkout_payment(
+    db: AsyncSession,
+    razorpay_order_id: str,
+    razorpay_payment_id: str,
+    razorpay_signature: str,
+) -> Order:
+    s = get_settings()
+    if not s.razorpay_key_id or not s.razorpay_key_secret:
+        raise PaymentVerifyError("Razorpay not configured")
+
+    try:
+        _client().utility.verify_payment_signature({
+            "razorpay_order_id": razorpay_order_id,
+            "razorpay_payment_id": razorpay_payment_id,
+            "razorpay_signature": razorpay_signature,
+        })
+    except Exception as e:
+        raise PaymentVerifyError("Invalid payment signature") from e
+
+    result = await db.execute(select(Payment).where(Payment.razorpay_order_id == razorpay_order_id))
+    payment = result.scalar_one_or_none()
+    if not payment:
+        raise PaymentVerifyError("Payment not found")
+
+    if payment.razorpay_payment_id == razorpay_payment_id and payment.status == PaymentStatus.captured:
+        order_result = await db.execute(select(Order).where(Order.id == payment.order_id))
+        return order_result.scalar_one()
+
+    payment.razorpay_payment_id = razorpay_payment_id
+    payment.status = PaymentStatus.captured
+    order_result = await db.execute(select(Order).where(Order.id == payment.order_id))
+    order = order_result.scalar_one()
+    order.status = OrderStatus.confirmed
+    db.add(OutboxEvent(
+        event_type="order.confirmed",
+        payload={"order_id": str(order.id), "user_id": str(order.user_id) if order.user_id else None},
+    ))
+    await db.flush()
+    return order
+
+
+async def confirm_cod_order(db: AsyncSession, order_id: UUID) -> Order:
+    """Cash on delivery — confirm order without Razorpay (Flipkart-style COD)."""
+    result = await db.execute(select(Payment).where(Payment.order_id == order_id))
+    payment = result.scalar_one_or_none()
+    if not payment:
+        raise PaymentVerifyError("Payment not found")
+    payment.status = PaymentStatus.captured
+    payment.razorpay_payment_id = f"cod_{order_id.hex[:16]}"
+    order_result = await db.execute(select(Order).where(Order.id == order_id))
+    order = order_result.scalar_one()
+    order.status = OrderStatus.confirmed
+    db.add(OutboxEvent(
+        event_type="order.confirmed",
+        payload={"order_id": str(order.id), "user_id": str(order.user_id), "payment_method": "cod"},
+    ))
+    await db.flush()
+    return order
+
+
 async def mock_capture_payment(db: AsyncSession, order_id: UUID) -> None:
     """Dev helper when Razorpay keys not configured."""
     result = await db.execute(select(Payment).where(Payment.order_id == order_id))

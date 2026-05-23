@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+export const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
 
 export type Category = { id: string; slug: string; name: string; description?: string };
 export type ProductSku = { id: string; label: string; price: number; currency: string };
@@ -22,22 +23,51 @@ export type CartItem = {
 };
 export type Cart = { cart_id: string; items: CartItem[]; subtotal: number; item_count: number };
 export type User = { id: string; email: string; name?: string; role: string };
+export type Address = {
+  id: string;
+  label: string | null;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  pincode: string;
+  phone: string;
+  is_default: boolean;
+};
 export type Order = {
   id: string;
   status: string;
   subtotal: number;
   currency: string;
   items: CartItem[];
+  payment_method?: string;
   razorpay_order_id?: string;
   razorpay_key_id?: string;
   created_at: string;
 };
 export type CheckoutResponse = {
   order: Order;
-  razorpay_order_id: string;
-  razorpay_key_id: string;
+  payment_method: string;
+  razorpay_order_id?: string;
+  razorpay_key_id?: string;
   amount: number;
   currency: string;
+};
+
+export type PaymentMethod = 'cod' | 'online';
+
+export type CheckoutPayload = {
+  payment_method?: PaymentMethod;
+  address_id?: string;
+  save_address?: boolean;
+  address_label?: string;
+  shipping_name?: string;
+  shipping_phone?: string;
+  shipping_line1?: string;
+  shipping_line2?: string;
+  shipping_city?: string;
+  shipping_state?: string;
+  shipping_pincode?: string;
 };
 
 function getToken(): string | null {
@@ -93,6 +123,11 @@ export const auth = {
       body: JSON.stringify({ email, password }),
     }),
   me: () => api<User>('/auth/me'),
+  updateProfile: (name: string) =>
+    api<User>('/auth/me', { method: 'PATCH', body: JSON.stringify({ name }) }),
+  listAddresses: () => api<Address[]>('/auth/addresses'),
+  createAddress: (body: Omit<Address, 'id' | 'is_default'> & { is_default?: boolean }) =>
+    api<Address>('/auth/addresses', { method: 'POST', body: JSON.stringify(body) }),
 };
 
 export const cart = {
@@ -107,10 +142,10 @@ export const cart = {
 };
 
 export const orders = {
-  checkout: (shipping: Record<string, string>, idempotencyKey: string) =>
+  checkout: (payload: CheckoutPayload, idempotencyKey: string) =>
     api<CheckoutResponse>('/orders/checkout', {
       method: 'POST',
-      body: JSON.stringify(shipping),
+      body: JSON.stringify(payload),
       idempotencyKey,
     }),
   list: () => api<Order[]>('/orders'),
@@ -118,6 +153,31 @@ export const orders = {
   mockPay: (id: string) => api<Order>(`/orders/${id}/mock-pay`, { method: 'POST' }),
 };
 
+export const payments = {
+  verify: (body: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) =>
+    api<{ order_id: string; status: string }>('/payments/verify', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+};
+
 export function formatPrice(paise: number): string {
   return `₹${(paise / 100).toFixed(2)}`;
+}
+
+export function addressToShipping(name: string, addr: Address) {
+  return {
+    address_id: addr.id,
+    shipping_name: name,
+    shipping_phone: addr.phone,
+    shipping_line1: addr.line1,
+    shipping_line2: addr.line2 || '',
+    shipping_city: addr.city,
+    shipping_state: addr.state,
+    shipping_pincode: addr.pincode,
+  };
 }

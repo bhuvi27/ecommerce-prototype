@@ -63,19 +63,29 @@ curl -sf -c "$COOKIE_JAR" -b "$COOKIE_JAR" -X POST "$API/cart/items" \
   -H "Authorization: Bearer $TOKEN" \
   -d "{\"product_id\":\"$PRODUCT_ID\",\"sku_id\":\"$SKU_ID\",\"quantity\":1}" >/dev/null
 
-# Checkout
+# Saved address
+ADDR=$(curl -sf -X POST "$API/auth/addresses" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"label":"E2E Home","line1":"123 Test St","city":"Mumbai","state":"MH","pincode":"400001","phone":"9999999999","is_default":true}')
+ADDR_ID=$(echo "$ADDR" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || true)
+check "Create saved address" "$([ -n "$ADDR_ID" ] && echo 1 || echo 0)"
+
+ADDRS=$(curl -sf -H "Authorization: Bearer $TOKEN" "$API/auth/addresses" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
+check "List saved addresses (>=1)" "$([ "${ADDRS:-0}" -ge 1 ] && echo 1 || echo 0)"
+
+# Checkout (requires login)
 IDEM=$(uuidgen 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")
 CHECKOUT=$(curl -sf -c "$COOKIE_JAR" -b "$COOKIE_JAR" -X POST "$API/orders/checkout" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Idempotency-Key: $IDEM" \
-  -d '{"shipping_name":"E2E User","shipping_phone":"9999999999","shipping_line1":"123 Test St","shipping_city":"Mumbai","shipping_state":"MH","shipping_pincode":"400001"}')
+  -d "{\"address_id\":\"$ADDR_ID\",\"payment_method\":\"cod\"}")
 ORDER_ID=$(echo "$CHECKOUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['order']['id'])")
+ORDER_STATUS=$(echo "$CHECKOUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['order']['status'])")
+PAY_METHOD=$(echo "$CHECKOUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('payment_method',''))")
 check "Checkout creates order" "$([ -n "$ORDER_ID" ] && echo 1 || echo 0)"
-
-# Mock pay
-PAID=$(curl -sf -X POST "$API/orders/$ORDER_ID/mock-pay" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
-check "Mock payment confirms order" "$([ "$PAID" = "confirmed" ] && echo 1 || echo 0)"
+check "COD checkout confirms order" "$([ "$ORDER_STATUS" = "confirmed" ] && [ "$PAY_METHOD" = "cod" ] && echo 1 || echo 0)"
 
 # Order history
 ORDERS=$(curl -sf -H "Authorization: Bearer $TOKEN" "$API/orders" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
@@ -86,7 +96,7 @@ CHECKOUT2=$(curl -sf -c "$COOKIE_JAR" -b "$COOKIE_JAR" -X POST "$API/orders/chec
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Idempotency-Key: $IDEM" \
-  -d '{"shipping_name":"E2E User","shipping_phone":"9999999999","shipping_line1":"123 Test St","shipping_city":"Mumbai","shipping_state":"MH","shipping_pincode":"400001"}')
+  -d "{\"address_id\":\"$ADDR_ID\",\"payment_method\":\"cod\"}")
 ORDER_ID2=$(echo "$CHECKOUT2" | python3 -c "import sys,json; print(json.load(sys.stdin)['order']['id'])")
 check "Idempotency returns same order" "$([ "$ORDER_ID" = "$ORDER_ID2" ] && echo 1 || echo 0)"
 
@@ -96,6 +106,9 @@ check "Web homepage (200)" "$([ "$WEB_STATUS" = "200" ] && echo 1 || echo 0)"
 
 WEB_CART=$(curl -sf -o /dev/null -w "%{http_code}" "$WEB/cart")
 check "Web cart page (200)" "$([ "$WEB_CART" = "200" ] && echo 1 || echo 0)"
+
+WEB_ACCT=$(curl -sf -o /dev/null -w "%{http_code}" "$WEB/account")
+check "Web account page (200)" "$([ "$WEB_ACCT" = "200" ] && echo 1 || echo 0)"
 
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="

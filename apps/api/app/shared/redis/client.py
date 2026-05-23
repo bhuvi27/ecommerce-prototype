@@ -15,22 +15,31 @@ def get_redis() -> redis.Redis:
 
 
 async def redis_get(key: str) -> Any | None:
-    r = get_redis()
-    val = await r.get(key)
-    return json.loads(val) if val else None
+    try:
+        r = get_redis()
+        val = await r.get(key)
+        return json.loads(val) if val else None
+    except Exception:
+        return None
 
 
 async def redis_set(key: str, value: Any, ttl: int | None = None) -> None:
-    r = get_redis()
-    data = json.dumps(value, default=str)
-    if ttl:
-        await r.setex(key, ttl, data)
-    else:
-        await r.set(key, data)
+    try:
+        r = get_redis()
+        data = json.dumps(value, default=str)
+        if ttl:
+            await r.setex(key, ttl, data)
+        else:
+            await r.set(key, data)
+    except Exception:
+        pass  # Redis unavailable, skip caching
 
 
 async def redis_delete(key: str) -> None:
-    await get_redis().delete(key)
+    try:
+        await get_redis().delete(key)
+    except Exception:
+        pass  # Redis unavailable, skip deletion
 
 
 async def redis_ping() -> bool:
