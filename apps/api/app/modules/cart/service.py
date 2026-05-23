@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.config import get_settings
@@ -144,8 +144,15 @@ async def remove_item(db: AsyncSession, user: User | None, guest_id: str | None,
         result = await db.execute(select(Cart).options(selectinload(Cart.items)).where(Cart.user_id == user.id))
         cart = result.scalar_one_or_none()
         if cart:
-            cart.items = [i for i in cart.items if not (i.product_id == product_id and i.sku_id == sku_id)]
+            await db.execute(
+                delete(CartItem).where(
+                    CartItem.cart_id == cart.id,
+                    CartItem.product_id == product_id,
+                    CartItem.sku_id == sku_id,
+                )
+            )
             await db.flush()
+            await db.refresh(cart, ["items"])
             return _cart_response(str(cart.id), _items_from_db(cart.items))
         return _cart_response(str(uuid.uuid4()), [])
 
@@ -154,3 +161,16 @@ async def remove_item(db: AsyncSession, user: User | None, guest_id: str | None,
     new_items = [i for i in resp.items if not (i.product_id == product_id and i.sku_id == sku_id)]
     await redis_set(f"{CART_PREFIX}{gid}", {"items": [i.model_dump() for i in new_items]}, get_settings().cart_ttl_days * 86400)
     return _cart_response(gid, new_items)
+
+
+async def clear_cart(db: AsyncSession, user: User, guest_id: str | None = None) -> CartResponse:
+    """Empty cart after successful checkout (Flipkart-style)."""
+    result = await db.execute(select(Cart).options(selectinload(Cart.items)).where(Cart.user_id == user.id))
+    cart = result.scalar_one_or_none()
+    if cart and cart.items:
+        await db.execute(delete(CartItem).where(CartItem.cart_id == cart.id))
+        await db.flush()
+        await db.refresh(cart, ["items"])
+    if guest_id:
+        await redis_delete(f"{CART_PREFIX}{guest_id}")
+    return await get_cart_response(db, user, guest_id)

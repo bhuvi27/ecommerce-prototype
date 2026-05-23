@@ -160,6 +160,11 @@ async def checkout(
             raise HTTPException(502, f"Payment initiation failed: {e}") from e
 
     await db.refresh(order, ["items"])
+
+    # Clear cart after order is placed so items do not reappear on next visit
+    if order.status == OrderStatus.confirmed:
+        await cart_service.clear_cart(db, user, guest_id)
+
     resp = CheckoutResponse(
         order=_order_response(order, rp_order_id, method),
         payment_method=method,
@@ -168,7 +173,7 @@ async def checkout(
         amount=cart.subtotal,
         currency="INR",
     )
-    db.add(IdempotencyKey(key=idempotency_key, user_id=user.id if user else None, response_body=resp.model_dump(mode="json")))
+    db.add(IdempotencyKey(key=idempotency_key, user_id=user.id, response_body=resp.model_dump(mode="json")))
     await db.flush()
     return resp
 

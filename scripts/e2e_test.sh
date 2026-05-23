@@ -26,10 +26,10 @@ check "API health/ready" "$([ "$READY" = "ready" ] && echo 1 || echo 0)"
 
 # Catalog
 CATS=$(curl -sf "$API/catalog/categories" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
-check "List categories (>=3)" "$([ "${CATS:-0}" -ge 3 ] && echo 1 || echo 0)"
+check "List categories (>=2)" "$([ "${CATS:-0}" -ge 2 ] && echo 1 || echo 0)"
 
 PRODS=$(curl -sf "$API/catalog/products" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['items']))")
-check "List products (>=5)" "$([ "${PRODS:-0}" -ge 5 ] && echo 1 || echo 0)"
+check "List products (>=3)" "$([ "${PRODS:-0}" -ge 3 ] && echo 1 || echo 0)"
 
 PROD=$(curl -sf "$API/catalog/products/coconut-oil" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('slug',''))")
 check "Product detail coconut-oil" "$([ "$PROD" = "coconut-oil" ] && echo 1 || echo 0)"
@@ -90,6 +90,10 @@ check "COD checkout confirms order" "$([ "$ORDER_STATUS" = "confirmed" ] && [ "$
 # Order history
 ORDERS=$(curl -sf -H "Authorization: Bearer $TOKEN" "$API/orders" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
 check "Order history for user" "$([ "${ORDERS:-0}" -ge 1 ] && echo 1 || echo 0)"
+
+# Cart cleared after checkout
+CART_ITEMS=$(curl -sf -H "Authorization: Bearer $TOKEN" "$API/cart" | python3 -c "import sys,json; print(json.load(sys.stdin)['item_count'])")
+check "Cart empty after order" "$([ "${CART_ITEMS:-1}" -eq 0 ] && echo 1 || echo 0)"
 
 # Idempotency replay
 CHECKOUT2=$(curl -sf -c "$COOKIE_JAR" -b "$COOKIE_JAR" -X POST "$API/orders/checkout" \

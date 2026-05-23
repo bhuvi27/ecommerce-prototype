@@ -19,7 +19,6 @@ from app.modules.catalog.service import CACHE_CATEGORIES, CACHE_PRODUCTS
 CATEGORIES = [
     {"slug": "oil", "name": "Oils", "description": "Natural beauty oils"},
     {"slug": "facewash", "name": "Face Wash", "description": "Gentle cleansers"},
-    {"slug": "cream", "name": "Creams", "description": "Moisturizing creams"},
 ]
 
 PRODUCTS = [
@@ -52,26 +51,6 @@ PRODUCTS = [
         "image_url": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400",
         "skus": [{"id": "default", "label": "150ml", "price": 19900, "currency": "INR"}],
         "attributes": {"type": "facewash"},
-    },
-    {
-        "slug": "boroplus-cream",
-        "name": "Boroplus Antiseptic Cream",
-        "description": "Classic antiseptic cream for dry skin.",
-        "category_slug": "cream",
-        "status": "active",
-        "image_url": "https://images.unsplash.com/photo-1620916566398-39f1149ab7be?w=400",
-        "skus": [{"id": "default", "label": "40ml", "price": 8900, "currency": "INR"}],
-        "attributes": {"type": "cream"},
-    },
-    {
-        "slug": "moisturizing-cream",
-        "name": "Daily Moisturizing Cream",
-        "description": "Lightweight daily moisturizer for all skin types.",
-        "category_slug": "cream",
-        "status": "active",
-        "image_url": "https://images.unsplash.com/photo-1611934551095-5bf920691f47?w=400",
-        "skus": [{"id": "default", "label": "50ml", "price": 34900, "currency": "INR"}],
-        "attributes": {"type": "cream"},
     },
 ]
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,8 +12,10 @@ import {
   Address,
   formatPrice,
   CheckoutPayload,
+  dispatchCartUpdated,
 } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { AddressSelector } from '@/components/AddressSelector';
 
 const emptyForm = {
   shipping_name: '',
@@ -25,14 +27,15 @@ const emptyForm = {
   shipping_pincode: '',
 };
 
-/** Flipkart-style checkout: saved address + COD only (no Razorpay popup). */
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [cart, setCart] = useState<Cart | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addressesLoading, setAddressesLoading] = useState(true);
+  const [addressesError, setAddressesError] = useState('');
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [useNewAddress, setUseNewAddress] = useState(false);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [saveAddress, setSaveAddress] = useState(true);
   const [addressLabel, setAddressLabel] = useState('Home');
   const [error, setError] = useState('');
@@ -40,6 +43,33 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [form, setForm] = useState(emptyForm);
+
+  const loadAddresses = useCallback(async () => {
+    setAddressesLoading(true);
+    setAddressesError('');
+    try {
+      const addrs = await auth.listAddresses();
+      const normalized = addrs.map((a) => ({ ...a, id: String(a.id) }));
+      setAddresses(normalized);
+      const def = normalized.find((a) => a.is_default) || normalized[0];
+      if (def) {
+        setSelectedAddressId(def.id);
+        setShowNewAddressForm(false);
+      } else {
+        setShowNewAddressForm(true);
+      }
+    } catch (e: unknown) {
+      setAddresses([]);
+      setAddressesError(
+        e instanceof Error
+          ? e.message
+          : 'Could not load saved addresses. Check you are logged in and the API is running.',
+      );
+      setShowNewAddressForm(true);
+    } finally {
+      setAddressesLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -49,24 +79,14 @@ export default function CheckoutPage() {
     }
     setForm((f) => ({ ...f, shipping_name: user.name || '' }));
     cartApi.get().then(setCart).catch((e) => setError(e.message));
-    auth.listAddresses().then((addrs) => {
-      setAddresses(addrs);
-      const def = addrs.find((a) => a.is_default) || addrs[0];
-      if (def) {
-        setSelectedAddressId(def.id);
-        setUseNewAddress(false);
-      } else {
-        setUseNewAddress(true);
-      }
-    }).catch(() => setUseNewAddress(true));
-  }, [user, authLoading, router]);
+    loadAddresses();
+  }, [user, authLoading, router, loadAddresses]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const validateAddress = (): string | null => {
-    if (!useNewAddress && selectedAddressId) return null;
+  const validateNewAddressForm = (): string | null => {
     const required: (keyof typeof emptyForm)[] = [
       'shipping_name', 'shipping_phone', 'shipping_line1',
       'shipping_city', 'shipping_state', 'shipping_pincode',
@@ -79,7 +99,7 @@ export default function CheckoutPage() {
 
   const buildPayload = (): CheckoutPayload => {
     const base: CheckoutPayload = { payment_method: 'cod' };
-    if (!useNewAddress && selectedAddressId) {
+    if (!showNewAddressForm && selectedAddressId) {
       return { ...base, address_id: selectedAddressId };
     }
     return {
@@ -92,13 +112,15 @@ export default function CheckoutPage() {
 
   const placeOrder = async () => {
     if (!cart?.items.length || !user) return;
-    const err = validateAddress();
-    if (err) {
-      setError(err);
-      return;
-    }
-    if (!useNewAddress && !selectedAddressId && addresses.length > 0) {
-      setError('Select a delivery address');
+
+    if (showNewAddressForm || addresses.length === 0) {
+      const err = validateNewAddressForm();
+      if (err) {
+        setError(err);
+        return;
+      }
+    } else if (!selectedAddressId) {
+      setError('Please select a delivery address');
       return;
     }
 
@@ -108,9 +130,10 @@ export default function CheckoutPage() {
     try {
       const result = await orders.checkout(buildPayload(), uuidv4());
       if (result.order.status !== 'confirmed') {
-        setError('Order was not confirmed. Please try again or contact support.');
+        setError('Order was not confirmed. Please try again.');
         return;
       }
+      dispatchCartUpdated();
       router.push(`/orders/view?id=${result.order.id}`);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Could not place order');
@@ -120,7 +143,7 @@ export default function CheckoutPage() {
   };
 
   const saveAddressOnly = async () => {
-    const err = validateAddress();
+    const err = validateNewAddressForm();
     if (err) {
       setError(err);
       return;
@@ -138,11 +161,10 @@ export default function CheckoutPage() {
         phone: form.shipping_phone,
         is_default: addresses.length === 0,
       });
-      const addrs = await auth.listAddresses();
-      setAddresses(addrs);
-      setSelectedAddressId(created.id);
-      setUseNewAddress(false);
-      setSuccess('Address saved.');
+      await loadAddresses();
+      setSelectedAddressId(String(created.id));
+      setShowNewAddressForm(false);
+      setSuccess('Address saved. Select it above and place your order.');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to save address');
     } finally {
@@ -150,8 +172,13 @@ export default function CheckoutPage() {
     }
   };
 
+  const selectSavedAddress = (id: string) => {
+    setSelectedAddressId(id);
+    setShowNewAddressForm(false);
+    setError('');
+  };
+
   const selectedAddr = addresses.find((a) => a.id === selectedAddressId);
-  const showAddressForm = useNewAddress || addresses.length === 0;
 
   if (authLoading || !user) return <p className="page-msg">Please login to continue…</p>;
   if (!cart) return <p className="page-msg">Loading…</p>;
@@ -168,7 +195,7 @@ export default function CheckoutPage() {
       <div className="checkout-main">
         <h1>Checkout</h1>
         <div className="checkout-steps">
-          <span className="step active">1. Address</span>
+          <span className="step active">1. Select address</span>
           <span className="step active">2. Payment</span>
         </div>
 
@@ -176,52 +203,42 @@ export default function CheckoutPage() {
         {success && <div className="alert alert-success">{success}</div>}
 
         <section className="checkout-section card">
-          <h2>Delivery address</h2>
-          {addresses.length > 0 && !showAddressForm && (
-            <div className="address-list">
-              {addresses.map((addr) => (
-                <label
-                  key={addr.id}
-                  className={`address-card ${selectedAddressId === addr.id ? 'selected' : ''}`}
-                >
-                  <input
-                    type="radio"
-                    name="address"
-                    checked={selectedAddressId === addr.id}
-                    onChange={() => {
-                      setSelectedAddressId(addr.id);
-                      setUseNewAddress(false);
-                    }}
-                  />
-                  <div className="address-body">
-                    <div className="address-top">
-                      <strong>{addr.label || 'Home'}</strong>
-                      {addr.is_default && <span className="badge">Default</span>}
-                      {selectedAddressId === addr.id && (
-                        <span className="deliver-here">Deliver here</span>
-                      )}
-                    </div>
-                    <p className="address-lines">
-                      {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}<br />
-                      {addr.city}, {addr.state} — {addr.pincode}<br />
-                      {addr.phone}
-                    </p>
-                  </div>
-                </label>
-              ))}
-              <button type="button" className="link-btn" onClick={() => setUseNewAddress(true)}>
-                + Add a new address
-              </button>
-            </div>
-          )}
+          <h2>Select delivery address</h2>
 
-          {showAddressForm && (
-            <div className="checkout-form">
+          <AddressSelector
+            addresses={addresses}
+            selectedId={selectedAddressId}
+            onSelect={selectSavedAddress}
+            onAddNew={() => {
+              setShowNewAddressForm(true);
+              setError('');
+            }}
+            loading={addressesLoading}
+            error={addressesError}
+            onRetry={loadAddresses}
+          />
+
+          {showNewAddressForm && (
+            <div className="checkout-form new-address-panel">
+              <h3 className="form-section-title">
+                {addresses.length > 0 ? 'Add new address' : 'Enter delivery address'}
+              </h3>
               {addresses.length > 0 && (
-                <button type="button" className="link-btn" onClick={() => setUseNewAddress(false)}>
-                  ← Use saved address
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => {
+                    setShowNewAddressForm(false);
+                    if (!selectedAddressId && addresses[0]) {
+                      setSelectedAddressId(addresses[0].id);
+                    }
+                  }}
+                >
+                  ← Back to saved addresses
                 </button>
               )}
+              <label>Label (Home, Work…)</label>
+              <input value={addressLabel} onChange={(e) => setAddressLabel(e.target.value)} placeholder="Home" />
               <label>Full name</label>
               <input name="shipping_name" required value={form.shipping_name} onChange={handleChange} />
               <label>Phone</label>
@@ -236,11 +253,13 @@ export default function CheckoutPage() {
               <input name="shipping_pincode" required value={form.shipping_pincode} onChange={handleChange} />
               <label className="checkbox-row">
                 <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} />
-                Save for next orders
+                Save this address for next orders
               </label>
-              <button type="button" className="btn btn-outline" disabled={savingAddress} onClick={saveAddressOnly}>
-                {savingAddress ? 'Saving…' : 'Save address'}
-              </button>
+              <div className="checkout-actions">
+                <button type="button" className="btn btn-outline" disabled={savingAddress} onClick={saveAddressOnly}>
+                  {savingAddress ? 'Saving…' : 'Save address'}
+                </button>
+              </div>
             </div>
           )}
         </section>
@@ -250,7 +269,7 @@ export default function CheckoutPage() {
           <div className="pay-option selected cod-only">
             <div>
               <strong>Cash on Delivery (COD)</strong>
-              <p>Pay when your order is delivered. No online payment popup.</p>
+              <p>Pay when your order is delivered.</p>
             </div>
           </div>
         </section>
@@ -268,15 +287,27 @@ export default function CheckoutPage() {
           <span>Amount payable</span>
           <strong>{formatPrice(cart.subtotal)}</strong>
         </div>
-        {selectedAddr && !showAddressForm && (
-          <p className="summary-addr">
-            Deliver to: {selectedAddr.city} — {selectedAddr.pincode}
-          </p>
+
+        {selectedAddr && !showNewAddressForm && (
+          <div className="summary-selected-address">
+            <p className="summary-selected-label">Delivering to</p>
+            <p className="summary-selected-text">
+              <strong>{selectedAddr.label || 'Home'}</strong>
+              <br />
+              {selectedAddr.line1}, {selectedAddr.city} — {selectedAddr.pincode}
+              <br />
+              {selectedAddr.phone}
+            </p>
+          </div>
         )}
-        <button type="button" className="btn btn-place-order" disabled={loading} onClick={placeOrder}>
+
+        <button type="button" className="btn btn-place-order" disabled={loading || addressesLoading} onClick={placeOrder}>
           {loading ? 'Placing order…' : 'Place order'}
         </button>
-        <p className="summary-note">Cash on delivery · Pay {formatPrice(cart.subtotal)} when you receive the order</p>
+        <p className="summary-note">Cash on delivery</p>
+        <p className="checkout-footer-links">
+          <Link href="/account/addresses">Manage addresses</Link>
+        </p>
       </aside>
     </div>
   );

@@ -86,10 +86,19 @@ Or include the full path origin with repo name.
 
 ---
 
+## Updating the product catalog
+
+Products and categories come from the **API database** (MongoDB), not from the static Pages build alone.
+
+1. Change `apps/api/scripts/seed.py` and push to `main`
+2. Re-run seed on the API: `cd apps/api && python -m scripts.seed` (local) or redeploy Render (build runs seed automatically)
+3. Re-run **Deploy GitHub Pages** workflow so the shop UI text and static product pages match
+
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
+| Old products still show on live site | Redeploy API (re-seed MongoDB) + hard-refresh browser (Cmd+Shift+R) |
 | Blank page / 404 on refresh | `basePath` is set automatically in CI from repo name |
 | No products | API down or wrong `NEXT_PUBLIC_API_URL` |
 | CORS error in browser | Add GitHub Pages URL to `CORS_ORIGINS` on API |

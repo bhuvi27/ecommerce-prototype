@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { catalog, cart, Product, formatPrice } from '@/lib/api';
+import { catalog, cart, Product, formatPrice, dispatchCartUpdated } from '@/lib/api';
 
 export default function ProductClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -19,6 +19,7 @@ export default function ProductClient({ slug }: { slug: string }) {
     if (!product) return;
     try {
       await cart.add(product.id, product.skus[0].id, qty);
+      dispatchCartUpdated();
       setMessage('Added to cart!');
       setTimeout(() => router.push('/cart'), 800);
     } catch (e: unknown) {

@@ -107,7 +107,11 @@ async def update_profile(body: ProfileUpdate, user: Annotated[User, Depends(get_
 
 @router.get("/addresses", response_model=list[AddressResponse])
 async def list_addresses(user: Annotated[User, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(select(Address).where(Address.user_id == user.id))
+    result = await db.execute(
+        select(Address)
+        .where(Address.user_id == user.id)
+        .order_by(Address.is_default.desc(), Address.created_at.desc())
+    )
     return result.scalars().all()
 
 

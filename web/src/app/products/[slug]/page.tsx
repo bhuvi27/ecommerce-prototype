@@ -4,8 +4,6 @@ const PRODUCT_SLUGS = [
   'coconut-oil',
   'almond-oil',
   'neem-facewash',
-  'boroplus-cream',
-  'moisturizing-cream',
 ];
 
 export function generateStaticParams() {

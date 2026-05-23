@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 export function Header() {
   const { user, logout } = useAuth();
+  const { itemCount } = useCart();
 
   return (
     <header className="site-header">
@@ -14,7 +16,10 @@ export function Header() {
         </Link>
         <nav className="header-nav">
           <Link href="/">Shop</Link>
-          <Link href="/cart">Cart</Link>
+          <Link href="/cart" className="cart-link">
+            Cart
+            {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}
+          </Link>
           {user ? (
             <>
               <Link href="/orders">Orders</Link>

@@ -219,7 +219,7 @@ cd apps/api && source .venv/bin/activate && python -m scripts.seed
 
 | Data | Store | Count |
 |------|-------|-------|
-| Categories (oil, facewash, cream) | MongoDB | 3 |
+| Categories (oil, facewash) | MongoDB | 2 |
 | Products (coconut oil, neem facewash, etc.) | MongoDB | 5 |
 | Admin user | PostgreSQL | 1 (`admin@beauty-store.local`) |
 

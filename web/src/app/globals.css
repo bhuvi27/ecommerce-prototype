@@ -177,6 +177,96 @@ label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 
 }
 .address-card.selected { border-color: var(--accent); background: #fff9fb; }
 .address-card input { margin-top: 0.25rem; }
+
+.address-card-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.address-card-add {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+  border-style: dashed;
+  background: #fafafa;
+  padding: 1.25rem;
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
+  color: var(--accent);
+  font-weight: 600;
+}
+.address-card-add .add-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.address-empty-hint {
+  color: var(--muted);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+.new-address-panel {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.summary-selected-address {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f5f9f6;
+  border-radius: 8px;
+  border: 1px solid #c8e6c9;
+}
+.summary-selected-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--success);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.summary-selected-text {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.flipkart-addresses .address-card.selected {
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.cart-link { position: relative; display: inline-flex; align-items: center; gap: 0.35rem; }
+.cart-badge {
+  background: var(--accent);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;
+}
+.cart-page h1 { margin-bottom: 1rem; }
+.cart-count-line { color: var(--muted); margin-bottom: 1rem; font-size: 0.95rem; }
+.cart-empty { padding: 2rem; text-align: center; }
+.cart-item-row {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cart-item-img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; }
+.cart-item-info { flex: 1; min-width: 140px; }
+.cart-remove-btn { padding: 0.35rem 0.75rem; }
+.cart-footer { padding: 1.25rem; text-align: right; margin-top: 1rem; }
+.cart-total-line { font-size: 1.2rem; margin-bottom: 1rem; }
 .address-lines { font-size: 0.9rem; color: var(--muted); margin-top: 0.35rem; line-height: 1.45; }
 
 .checkbox-row {

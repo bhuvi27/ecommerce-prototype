@@ -22,7 +22,7 @@ export default function HomePage() {
     <>
       <section className="hero-banner">
         <h1>Natural Beauty, Delivered</h1>
-        <p style={{ color: 'var(--muted)' }}>Handpicked oils, facewash and creams — shop like your favourite marketplace</p>
+        <p style={{ color: 'var(--muted)' }}>Handpicked oils and facewash for your daily care</p>
       </section>
 
       {error && <div className="alert alert-error">{error}</div>}

@@ -141,6 +141,13 @@ export const cart = {
     api<Cart>(`/cart/items/${productId}/${skuId}`, { method: 'DELETE' }),
 };
 
+/** Call after add/remove/checkout so header cart count stays in sync */
+export function dispatchCartUpdated() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cart-updated'));
+  }
+}
+
 export const orders = {
   checkout: (payload: CheckoutPayload, idempotencyKey: string) =>
     api<CheckoutResponse>('/orders/checkout', {

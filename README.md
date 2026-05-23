@@ -65,7 +65,7 @@ Open **http://localhost:3001**
 
 ## End-to-end flow (no Razorpay keys)
 
-1. Browse products on home page (5 seeded items)
+1. Browse products on home page (3 seeded items: oils + facewash)
 2. Open a product → Add to cart
 3. Cart → Checkout → fill shipping → **Pay Now**
 4. Dev mode auto-completes payment via mock endpoint
