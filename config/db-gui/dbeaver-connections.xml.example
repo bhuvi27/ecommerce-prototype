@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Import in DBeaver: File → Import → Connections. Set user/password from config/db-gui/*.env -->
+<connections>
+	<connection
+		name="Beauty Store LOCAL"
+		host="localhost"
+		port="5432"
+		database="beauty_store"
+		url="jdbc:postgresql://localhost:5432/beauty_store"
+		type="dev" />
+	<connection
+		name="Beauty Store EC2"
+		host="localhost"
+		port="15432"
+		database="beauty_store"
+		url="jdbc:postgresql://localhost:15432/beauty_store"
+		type="dev" />
+</connections>

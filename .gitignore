@@ -7,7 +7,17 @@ dist/
 web/out/
 .env
 .env.local
+.env.aws
+**/terraform.tfvars
+*.pem
+infra/terraform/**/.terraform/
+infra/terraform/**/tfplan
+infra/terraform/**/terraform.tfstate*
 *.log
 .DS_Store
 coverage/
 .turbo/
+.db-tunnel-ec2.pid
+config/db-gui/local.env
+config/db-gui/ec2.env
+config/db-gui/dbeaver-connections.xml

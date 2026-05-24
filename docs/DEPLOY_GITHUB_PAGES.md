@@ -12,6 +12,8 @@ GitHub Pages hosts **static files only** — the Next.js shop UI. Your **Python 
 
 After deploy, set `NEXT_PUBLIC_API_URL` to your Render API URL so the live site can load products and checkout.
 
+For **AWS learning** with an EC2 backend, see [DEPLOY_AWS.md](DEPLOY_AWS.md). You can keep this Pages URL and switch the API target via a manual workflow run (below).
+
 ---
 
 ## Step 1 — Push code to GitHub
@@ -63,6 +65,17 @@ On GitHub repo → **Settings** → **Secrets and variables** → **Actions** �
 | `NEXT_PUBLIC_API_URL` | `https://YOUR-API.onrender.com/api/v1` |
 
 Re-run the **Deploy GitHub Pages** workflow (Actions tab → workflow → Re-run).
+
+### Switch API backend (Render vs AWS)
+
+The shop UI is rebuilt with a fixed `NEXT_PUBLIC_API_URL` at build time.
+
+| Backend | When to use | How |
+|---------|-------------|-----|
+| **Render** (default) | Public demo, always on | Push to `main`, or set repo variable `NEXT_PUBLIC_API_URL` |
+| **AWS EC2** | Learning / testing | Actions → **Deploy GitHub Pages** → **Run workflow** → set **api_url** to `http://YOUR_ELASTIC_IP:3000/api/v1` |
+
+Set `CORS_ORIGINS` on whichever API is active to include `https://YOUR_USERNAME.github.io`. See [DEPLOY_AWS.md](DEPLOY_AWS.md) for EC2 setup.
 
 ---
 

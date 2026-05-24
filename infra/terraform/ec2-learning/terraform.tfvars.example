@@ -1,0 +1,10 @@
+# Copy to terraform.tfvars: cp terraform.tfvars.example terraform.tfvars
+
+aws_region          = "ap-south-1"
+project_name        = "beauty-store-learning"
+instance_type       = "t3.micro"
+create_ssh_key      = true
+allowed_ssh_cidr    = "YOUR_IP/32"   # curl -4 ifconfig.me
+allowed_api_cidr    = "0.0.0.0/0"
+github_repo_url     = "https://github.com/bhuvi27/shamit-beauty-store.git"
+github_pages_origin = "https://bhuvi27.github.io"

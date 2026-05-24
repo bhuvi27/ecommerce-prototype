@@ -1,0 +1,77 @@
+{
+	"folders": {
+		"Beauty Store": {}
+	},
+	"connections": {
+		"beauty-store-local": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "Beauty Store LOCAL",
+			"folder": "Beauty Store",
+			"save-password": true,
+			"show-system-objects": true,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "beauty_store",
+				"url": "jdbc:postgresql://localhost:5432/beauty_store",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"auth-model": "native",
+				"user": "beauty",
+				"properties": {
+					"connectTimeout": "20",
+					"loginTimeout": "20"
+				},
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "true",
+					"@dbeaver-show-template-db@": "false",
+					"@dbeaver-show-unavailable-db@": "false"
+				}
+			}
+		},
+		"beauty-store-ec2": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "Beauty Store EC2",
+			"folder": "Beauty Store",
+			"save-password": true,
+			"show-system-objects": true,
+			"configuration": {
+				"host": "localhost",
+				"port": "15432",
+				"database": "beauty_store",
+				"url": "jdbc:postgresql://localhost:15432/beauty_store",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"auth-model": "native",
+				"user": "beauty",
+				"properties": {
+					"connectTimeout": "20",
+					"loginTimeout": "20"
+				},
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "true",
+					"@dbeaver-show-template-db@": "false",
+					"@dbeaver-show-unavailable-db@": "false"
+				}
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "23,162,184",
+			"description": "Beauty Store",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"smart-commit": false,
+			"smart-commit-recover": true,
+			"auto-close-transactions": true,
+			"close-transactions-period": 1800,
+			"auto-close-connections": true,
+			"close-connections-period": 14400
+		}
+	}
+}
