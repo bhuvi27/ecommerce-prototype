@@ -4,12 +4,6 @@ on:
   push:
     branches: [main, master]
   workflow_dispatch:
-    inputs:
-      api_url:
-        description: 'Override NEXT_PUBLIC_API_URL (e.g. http://EC2_IP:3000/api/v1 for AWS learning)'
-        required: false
-        type: string
-        default: ''
 
 permissions:
   contents: read
@@ -40,8 +34,7 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
           GITHUB_REPOSITORY: ${{ github.repository }}
-          # Manual run: optional api_url input. Push: repo variable or Render default.
-          NEXT_PUBLIC_API_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.api_url != '' && inputs.api_url || vars.NEXT_PUBLIC_API_URL || 'https://beauty-store-api.onrender.com/api/v1' }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://beauty-store-api.onrender.com/api/v1' }}
         run: npm run build
 
       - name: Add .nojekyll
