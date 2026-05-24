@@ -10,6 +10,7 @@ Modular monolith beauty e-commerce: **Python FastAPI** backend + **Next.js** web
 | **[docs/DEPLOY_GITHUB_PAGES.md](docs/DEPLOY_GITHUB_PAGES.md)** | Publish the web for others (free GitHub Pages + optional Render API) |
 | **[docs/DATABASE_GUI.md](docs/DATABASE_GUI.md)** | DBeaver / Compass / Redis Insight — local vs EC2 connections |
 | **[docs/DEPLOY_AWS.md](docs/DEPLOY_AWS.md)** | Learn AWS cheaply (EC2 + Docker in Mumbai; run `./scripts/aws-setup.sh`) |
+| **[docs/DEPLOY_AWS_PROD.md](docs/DEPLOY_AWS_PROD.md)** | AWS production UI (S3 + CloudFront on `aws` branch; EC2 API) |
 
 ## Stack
 
@@ -96,7 +97,7 @@ Checkout opens Razorpay widget; webhook hits `POST /api/v1/payments/webhook`.
 ```
 apps/api/          FastAPI modular monolith
 web/               Next.js storefront
-infra/terraform/   AWS modules (ec2-learning for demo; full stack for production later)
+infra/terraform/   AWS modules (ec2-learning, aws-prod S3+CloudFront; full stack for production later)
 docker-compose.yml Postgres, Mongo, Redis, MinIO (local)
 docker-compose.prod.yml  Same stack + API for EC2 deploy
 ```

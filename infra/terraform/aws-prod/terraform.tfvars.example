@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and set your EC2 Elastic IP from ec2-learning output:
+#   cd ../ec2-learning && terraform output -raw elastic_ip
+
+aws_region    = "ap-south-1"
+project_name  = "beauty-store-prod"
+ec2_origin_ip = "YOUR_ELASTIC_IP"

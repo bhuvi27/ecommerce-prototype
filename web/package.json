@@ -6,6 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "build:pages": "GITHUB_PAGES=true next build",
+    "build:aws": "STATIC_EXPORT=true next build",
     "start": "next start -p 3001"
   },
   "dependencies": {

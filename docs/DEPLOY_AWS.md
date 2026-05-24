@@ -278,9 +278,11 @@ Render + GitHub Pages continue working as your free demo.
 
 ---
 
-## Phase 2 — Production AWS (later)
+## Phase 2 — Production AWS (S3 + CloudFront UI)
 
-When you publish for real, migrate off single EC2 to managed services. See [`infra/terraform/`](../infra/terraform/) (ECS, RDS, S3 modules) and budget ~$80–150/month minimum.
+For a **separate AWS shop URL** (S3 + CloudFront UI, EC2 API) without touching the Render demo on `main`, see **[DEPLOY_AWS_PROD.md](DEPLOY_AWS_PROD.md)**.
+
+When you publish for real at scale, migrate off single EC2 to managed services. See [`infra/terraform/`](../infra/terraform/) (ECS, RDS, S3 modules) and budget ~$80–150/month minimum.
 
 | Learning (EC2) | Production |
 |----------------|------------|
