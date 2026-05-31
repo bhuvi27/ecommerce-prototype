@@ -35,4 +35,26 @@ docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
 docker compose -f docker-compose.prod.yml run --rm api python -m scripts.seed
 docker compose -f docker-compose.prod.yml up -d api
 
+cat > /etc/systemd/system/beauty-store.service << 'UNIT'
+[Unit]
+Description=Beauty Store Docker stack
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/beauty-store
+ExecStart=/usr/local/bin/docker-compose -f docker-compose.prod.yml up -d
+ExecStop=/usr/local/bin/docker-compose -f docker-compose.prod.yml down
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable beauty-store.service
+
 echo "Beauty store API deployed at http://$PUBLIC_IP:3000" > /var/log/beauty-store-deploy.log
