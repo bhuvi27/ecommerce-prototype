@@ -48,7 +48,7 @@ variable "root_volume_size_gb" {
 variable "github_repo_url" {
   description = "Public Git repo to clone on EC2"
   type        = string
-  default     = "https://github.com/bhuvi27/shamit-beauty-store.git"
+  default     = "https://github.com/bhuvi27/ecommerce-prototype.git"
 }
 
 variable "github_pages_origin" {
