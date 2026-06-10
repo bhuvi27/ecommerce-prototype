@@ -47,7 +47,7 @@ Your site URL will be:
 
 `https://YOUR_USERNAME.github.io/REPO_NAME/`
 
-Example: `https://shamit.github.io/shree-hari-beauty/`
+Example: `https://bhuvi27.github.io/ecommerce-prototype/`
 
 ---
 

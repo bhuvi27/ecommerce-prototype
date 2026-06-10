@@ -4,7 +4,7 @@ Separate AWS deployment for the beauty store. Your **Render + GitHub Pages demo 
 
 | Environment | Branch | Frontend | Backend | URL |
 |-------------|--------|----------|---------|-----|
-| **Demo (live)** | `main` | GitHub Pages | Render | `https://bhuvi27.github.io/shamit-beauty-store/` |
+| **Demo (live)** | `main` | GitHub Pages | Render | `https://bhuvi27.github.io/ecommerce-prototype/` |
 | **AWS prod** | `aws` | S3 + CloudFront | EC2 + Docker | `https://xxxxxxxx.cloudfront.net` |
 
 ---
@@ -237,6 +237,7 @@ Render + GitHub Pages on `main` keep working regardless.
 | Blank page on CloudFront | Check S3 sync; invalidate cache `/*` |
 | Products stuck on Loading | CORS — add CloudFront URL to `CORS_ORIGINS` on EC2 |
 | 502 from `/api/v1/*` | EC2 API down; check `docker compose ps` and security group port 3000 |
+| API timeout / instance reachability **failed** | Run `./scripts/aws-recover-ec2.sh` (stop/start + wait for health) |
 | Old UI after deploy | Run CloudFront invalidation |
 | Pages demo broken | Ensure you did not change `main` deploy or Render URL |
 
