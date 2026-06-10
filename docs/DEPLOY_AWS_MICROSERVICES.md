@@ -13,7 +13,13 @@ Separate HTTPS URL from the monolith on `aws` branch. Uses **ECS Fargate**, **RD
 - **Async Kafka**: `order.created`, `payment.completed`, `order.confirmed` → notification worker
 - **Multi-pod**: state in Redis/RDS; ALB routes to any healthy ECS task
 
-See plan diagrams in repo history or `.cursor/plans/` for full sequence flows.
+### Request flow
+
+1. **Browse** — CloudFront (static UI) + `/api/v1/catalog/*` → catalog service (MongoDB, Redis cache)
+2. **Cart** — `/api/v1/cart*` → cart service (Redis for guests, Postgres for logged-in users)
+3. **Checkout** — `POST /api/v1/orders/checkout` → order service (fetches cart over HTTP, writes Postgres, publishes Kafka events)
+4. **Payment** — COD confirms in order service; Razorpay flows use payment service + webhooks
+5. **Notifications** — notification worker consumes Kafka and sends email
 
 ## Prerequisites
 

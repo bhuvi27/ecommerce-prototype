@@ -81,7 +81,7 @@ This document lists **every module**, what it does, which **database or service*
 
 | Item | Detail |
 |------|--------|
-| **Purpose** | Public categories, product list (cursor), product by slug |
+| **Purpose** | Public categories, paginated product list, product by slug |
 | **Tech** | Motor (async MongoDB driver) |
 | **Database** | **MongoDB** — collections: `categories`, `products` |
 | **Docker image** | `mongo:7` (via `docker compose`) |
