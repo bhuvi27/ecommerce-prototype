@@ -22,7 +22,5 @@ config/db-gui/local.env
 config/db-gui/ec2.env
 config/db-gui/dbeaver-connections.xml
 
-# IDE / editor local state (never commit)
-.cursor/
-**/.cursor/
-*.cursor-plan.md
+# IDE local state (never commit)
+**/.curs*/
