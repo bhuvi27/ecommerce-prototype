@@ -1,6 +1,5 @@
-# Shree Hari Beauty Store
 
-Modular monolith beauty e-commerce: **Python FastAPI** backend + **Next.js** web UI.
+E-commerce: **Python FastAPI** backend + **Next.js** web UI.
 
 ## Documentation (single reference)
 
@@ -60,10 +59,6 @@ npm run dev
 
 Open **http://localhost:3001**
 
-### Default admin
-
-- Email: `admin@beauty-store.local`
-- Password: `Admin123!`
 
 ## End-to-end flow (no Razorpay keys)
 
